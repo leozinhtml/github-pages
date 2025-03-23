@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de Investimentos</title>
+    <style>
+        /* Reset de Estilos */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            background-color: #121212; /* Fundo escuro minimalista */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+
+        /* Barra de Navegação */
+        .navbar {
+            background-color: #1e1e1e; /* Fundo escuro */
+            color: #f0b90b; /* Amarelo Binance */
+            padding: 20px;
+            width: 100%;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Container Principal */
+        .container {
+            margin-top: 30px;
+            background-color: #1e1e1e; /* Fundo escuro */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .container h2 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #f0b90b; /* Amarelo Binance */
+        }
+
+        .price {
+            font-size: 36px;
+            font-weight: bold;
+            color: #00b0ff; /* Azul claro */
+            margin-bottom: 10px;
+        }
+
+        .variation {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .variation.positive {
+            color: #00e676; /* Verde */
+        }
+
+        .variation.negative {
+            color: #f44336; /* Vermelho */
+        }
+
+        .volume {
+            font-size: 16px;
+            color: #aaa; /* Cinza claro */
+        }
+
+        /* Dropdown */
+        select {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            background-color: #2a2a2a; /* Fundo escuro */
+            color: #fff;
+        }
+
+        select:focus {
+            outline: none;
+            border: 1px solid #f0b90b; /* Amarelo Binance */
+        }
+
+        /* Imagem da Moeda */
+        .crypto-image {
+            width: 100px;
+            height: 100px;
+            margin: 20px auto;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Rodapé */
+        .footer {
+            margin-top: auto;
+            background-color: #1e1e1e; /* Fundo escuro */
+            color: #aaa; /* Cinza claro */
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+        }
+
+        .footer a {
+            color: #f0b90b; /* Amarelo Binance */
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de Navegação -->
+    <div class="navbar">
+        Plataforma de Investimentos
+    </div>
+
+    <!-- Container Principal -->
+    <div class="container">
+        <img id="moeda-logo" class="crypto-image" src="https://cryptologos.cc/logos/bitcoin-btc-logo.png" alt="Logo da Moeda">
+        <h2 id="moeda-nome">Bitcoin (BTC)</h2>
+        <div class="price" id="cotacao">Carregando...</div>
+        <div class="variation" id="variacao">Carregando...</div>
+        <div class="volume" id="volume">Volume: Carregando...</div>
+
+        <!-- Dropdown para selecionar moedas -->
+        <select id="moeda" onchange="obterDados()">
+            <option value="BTCBRL" data-nome="Bitcoin (BTC)" data-logo="https://cryptologos.cc/logos/bitcoin-btc-logo.png">Bitcoin (BTC)</option>
+            <option value="ETHBRL" data-nome="Ethereum (ETH)" data-logo="https://cryptologos.cc/logos/ethereum-eth-logo.png">Ethereum (ETH)</option>
+            <option value="BNBBRL" data-nome="Binance Coin (BNB)" data-logo="https://cryptologos.cc/logos/binance-coin-bnb-logo.png">Binance Coin (BNB)</option>
+            <option value="ADAUSDT" data-nome="Cardano (ADA)" data-logo="https://cryptologos.cc/logos/cardano-ada-logo.png">Cardano (ADA)</option>
+            <option value="XRPUSDT" data-nome="Ripple (XRP)" data-logo="https://cryptologos.cc/logos/xrp-xrp-logo.png">Ripple (XRP)</option>
+            <option value="DOGEUSDT" data-nome="Dogecoin (DOGE)" data-logo="https://cryptologos.cc/logos/dogecoin-doge-logo.png">Dogecoin (DOGE)</option>
+            <option value="SOLUSDT" data-nome="Solana (SOL)" data-logo="https://cryptologos.cc/logos/solana-sol-logo.png">Solana (SOL)</option>
+            <option value="DOTUSDT" data-nome="Polkadot (DOT)" data-logo="https://cryptologos.cc/logos/polkadot-new-dot-logo.png">Polkadot (DOT)</option>
+        </select>
+
+        <!-- Loader -->
+        <div id="loader">Carregando...</div>
+    </div>
+
+    <!-- Rodapé -->
+    <div class="footer">
+        <p>&copy; 2025. Desenvolvido com ❤ por <a href="#">Seu Nome</a></p>
+    </div>
+
+    <script>
+        const baseUrl = "https://api.binance.com/api/v3/ticker/24hr?symbol=";
+
+        async function obterDados() {
+            const moedaSelect = document.getElementById("moeda");
+            const moeda = moedaSelect.value;
+            const nomeMoeda = moedaSelect.options[moedaSelect.selectedIndex].dataset.nome;
+            const logoMoeda = moedaSelect.options[moedaSelect.selectedIndex].dataset.logo;
+
+            // Atualiza o nome e a imagem da moeda
+            document.getElementById("moeda-nome").innerText = nomeMoeda;
+            const moedaLogo = document.getElementById("moeda-logo");
+            moedaLogo.src = logoMoeda;
+
+            // Adiciona um placeholder caso a imagem não carregue
+            moedaLogo.onerror = function () {
+                this.src = "https://via.placeholder.com/100?text=No+Image";
+            };
+
+            const url = `${baseUrl}${moeda}`;
+            const loader = document.getElementById("loader");
+            loader.style.display = "block";
+
+            try {
+                const resposta = await fetch(url);
+                const dados = await resposta.json();
+
+                const preco = parseFloat(dados.lastPrice).toFixed(2);
+                const volume = parseFloat(dados.volume).toFixed(0);
+                const variacao = parseFloat(dados.priceChangePercent).toFixed(2);
+                const varClass = variacao >= 0 ? 'positive' : 'negative';
+
+                document.getElementById("cotacao").innerText = `R$ ${preco}`;
+                document.getElementById("variacao").innerText = `${variacao}%`;
+                document.getElementById("variacao").className = `variation ${varClass}`;
+                document.getElementById("volume").innerText = `Volume: ${volume}`;
+            } catch (erro) {
+                console.error("Erro ao obter os dados:", erro);
+                document.getElementById("cotacao").innerText = "Erro ao carregar os dados";
+                document.getElementById("variacao").innerText = "Erro ao carregar";
+                document.getElementById("volume").innerText = "Erro ao carregar";
+            } finally {
+                loader.style.display = "none";
+            }
+        }
+
+        obterDados();
+    </script>
+
+</body>
+</html>
